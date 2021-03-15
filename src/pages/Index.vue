@@ -78,10 +78,12 @@ export default {
         this.sendData(data); // in this function loginc for sending data with reside;
     },
 
-    sendData(data){
+    async sendData(data){
         console.log('## sending data ##')
         console.log("VALUE :", this.command);
         console.log("ENCODED VALUE :", data);
+
+        // logics for sending data
 
 /*
         this.writer = await this.port.writable.getWriter();
@@ -95,7 +97,9 @@ export default {
     },
 
     async startReading() {
-        // HERE reading loginc will reside
+
+        // logics for reading data 
+
 /*        
         const textDecoder = new TextDecoderStream();
         const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
