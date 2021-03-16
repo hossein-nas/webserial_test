@@ -31,7 +31,7 @@ export default {
   data:()=>({
     device : null,
     port : null,
-    baudRate: 9600,
+    baudRate: 57600,
     connected : false,
     reader: null,
     writer: null,
@@ -44,7 +44,7 @@ export default {
   computed: {
     filters() {
         return [
-            { usbVendorId: 0x2341 }
+            { usbVendorId: 0x10C4 }
         ]
     }
   },
@@ -65,7 +65,7 @@ export default {
             baudRate: this.baudRate,
             dataBits : 8,
             stopBits: 1,
-            parity: "even",
+            parity: "none",
             flowControl: "none"
         })
 
