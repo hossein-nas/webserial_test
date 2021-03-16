@@ -49,6 +49,14 @@ export default {
     }
   },
 
+  created(){
+    let HexString = "A58102004CA3";
+    let slicedHex = this.sliceString(HexString);
+    let _Uint8Array = this.HexToUint8(slicedHex);
+    console.log(slicedHex);
+    console.log(_Uint8Array);
+  },
+
   methods: {
     reqSerialAccess(){
         navigator.serial.requestPort({ filters: this.filters})
@@ -96,6 +104,35 @@ export default {
         await this.writer.write(data.buffer);
 		console.log('writen');
         this.writer.releaseLock();
+    },
+
+    async testDelay(){
+        console.log('testing 1');
+        await this.simulateDelay(5000);
+        console.log('testing 2'); // this will trigger 5000 miliseconds later # don't forget 'await'&'async'
+    },
+
+    async simulateDelay(delay){
+        return new Promise( (resolve, reject) => {
+            setTimeout(()=> resolve(), delay);
+        })
+    },
+
+    sliceString(_str, len){
+        if(_str.length % 2 == 1 ){
+            _str = '0' + _str;
+        }
+        _str = _str.toUpperCase();
+        let sliced = _str.match(/(\w){2}/g)
+        return sliced;
+    },
+
+    isValidHex(term){
+        return term.match(/^#[a-f0-9]{2}$/i) !== null;
+    },
+
+    HexToUint8(_arr){
+        return new Uint8Array(_arr);
     },
 
     async startReading() {
