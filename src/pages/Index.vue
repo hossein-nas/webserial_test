@@ -56,7 +56,8 @@ export default {
                 this.port = response;
 
                 await this.connectDevice();
-            })
+				await this.startReading();
+			})
 
     },
 
@@ -79,7 +80,7 @@ export default {
 		}
 		const data = new Uint8Array(a);
         //const data = new Uint8Array(this.command); 
-        this.sendData(data); // in this function loginc for sending data with reside;
+        await this.sendData(data); // in this function loginc for sending data with reside;
     },
 
     async sendData(data){
@@ -88,50 +89,43 @@ export default {
         console.log("ENCODED VALUE :", data);
 
         // logics for sending data
-
-/*
-        this.writer = await this.port.writable.getWriter();
+		this.writer = await this.port.writable.getWriter();
         const encoder = new TextEncoder();
-        await this.writer.write(encoder.encode('HELLO'));
-        await this.writer.write(encoder.encode('#'));
-        console.log('writen');
+        //await this.writer.write(encoder.encode('HELLO'));
+        //await this.writer.write(encoder.encode('#'));
+        await this.writer.write(data.buffer);
+		console.log('writen');
         this.writer.releaseLock();
-*/
-
     },
 
     async startReading() {
-
-        // logics for reading data 
-
-/*        
+        // logics for reading data         
         const textDecoder = new TextDecoderStream();
         const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
         const reader = textDecoder.readable.getReader();
 
         // Listen to data coming from the serial device.
         while (true) {
-            console.log('## before read ##');
-          const { value, done } = await reader.read();
-          if (done) {
-            // Allow the serial port to be closed later.
-            reader.releaseLock();
-            break;
-          }
-          // value is a string.
-          console.log(value);
+			console.log('## before read ##');
+			const { value, done } = await reader.read();
+			if (done) {
+				// Allow the serial port to be closed later.
+				reader.releaseLock();
+				break;
+			}
+			// value is a string.
+			console.log(value);
+			var result = '';
+			for (var i=0; i<value.length; i++) {
+				var temp = "00"+value.charCodeAt(i).toString(16);
+				result += temp.substr(temp.length-2)
+			}
+			console.log(result);
         }
-*/
-		var result = '';
-		for (var i=0; i<value.length; i++) {
-			var temp = "00"+value.charCodeAt(i).toString(16);
-			result += temp.substr(temp.length-2)
-		}
-		console.log(result);
 
         // with this peace you can send data to be shown in list below input 
-        let dataToBeShown = "PLACEHOLDER DATA";
-        this.addDataToConsole(dataToBeShown);
+        //let dataToBeShown = "PLACEHOLDER DATA";
+        //this.addDataToConsole(dataToBeShown);
     },
 
     addDataToConsole(data){
