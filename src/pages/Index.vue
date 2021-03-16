@@ -124,7 +124,7 @@ export default {
         }
         _str = _str.toUpperCase();
         let sliced = _str.match(/(\w){2}/g)
-        return sliced;
+        return sliced.map((item)=>parseInt(item, 16));
     },
 
     isValidHex(term){
