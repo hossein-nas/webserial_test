@@ -72,9 +72,13 @@ export default {
     },
 
     async triggerSendData(){
-        //transforming string to Uint8Array
-        const data = new Uint8Array(this.command); 
-
+        var str = this.command;
+		var a = [];
+		for (var i = 0, len = str.length; i < len; i+=2) {
+			a.push(parseInt(str.substr(i,2),16));
+		}
+		const data = new Uint8Array(a);
+        //const data = new Uint8Array(this.command); 
         this.sendData(data); // in this function loginc for sending data with reside;
     },
 
@@ -118,6 +122,12 @@ export default {
           console.log(value);
         }
 */
+		var result = '';
+		for (var i=0; i<value.length; i++) {
+			var temp = "00"+value.charCodeAt(i).toString(16);
+			result += temp.substr(temp.length-2)
+		}
+		console.log(result);
 
         // with this peace you can send data to be shown in list below input 
         let dataToBeShown = "PLACEHOLDER DATA";
