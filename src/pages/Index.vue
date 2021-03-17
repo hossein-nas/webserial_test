@@ -50,7 +50,7 @@ export default {
   },
 
   created(){
-    let HexString = "A58102004CA3";
+    let HexString = "A5010100";
     let slicedHex = this.sliceString(HexString);
     let _Uint8Array = this.HexToUint8(slicedHex);
     console.log(slicedHex);
@@ -137,9 +137,11 @@ export default {
 
     async startReading() {
         // logics for reading data         
-        const textDecoder = new TextDecoderStream();
-        const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
-        const reader = textDecoder.readable.getReader();
+        //const textDecoder = new TextDecoderStream();
+        //const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
+        //const reader = textDecoder.readable.getReader();
+		const reader = this.port.readable.getReader();
+
 
         // Listen to data coming from the serial device.
         while (true) {
@@ -150,14 +152,15 @@ export default {
 				reader.releaseLock();
 				break;
 			}
-			// value is a string.
-			console.log(value);
+			// value is a Uint8Array.
+			console.log("RESPONSE:", value);
+
 			var result = '';
 			for (var i=0; i<value.length; i++) {
-				var temp = "00"+value.charCodeAt(i).toString(16);
+				var temp = "00"+value[i].toString(16);
 				result += temp.substr(temp.length-2)
 			}
-			console.log(result);
+			console.log("ENCODED RESPONSE:", result.toUpperCase());
         }
 
         // with this peace you can send data to be shown in list below input 
