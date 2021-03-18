@@ -64,7 +64,6 @@ export default {
                 this.port = response;
 
                 await this.connectDevice();
-				await this.startReading();
 			})
 
     },
@@ -89,6 +88,8 @@ export default {
 		const data = new Uint8Array(a);
         //const data = new Uint8Array(this.command); 
         await this.sendData(data); // in this function loginc for sending data with reside;
+
+        this.newSendData(data).then(()=> this.startReading() );
     },
 
     async sendData(data){
@@ -106,10 +107,50 @@ export default {
         this.writer.releaseLock();
     },
 
+    async newSendData(data){
+        return new Promise((resolve, reject){
+            console.log('## sending data ##')
+            console.log("VALUE :", this.command);
+            console.log("ENCODED VALUE :", data);
+
+            // logics for sending data
+            this.writer = await this.port.writable.getWriter();
+            const encoder = new TextEncoder();
+            await this.writer.write(data.buffer);
+            console.log('writen');
+            this.writer.releaseLock();
+            resolve();
+        })
+    }
+
     async testDelay(){
-        console.log('testing 1');
-        await this.simulateDelay(5000);
-        console.log('testing 2'); // this will trigger 5000 miliseconds later # don't forget 'await'&'async'
+
+        // let getFakeData = new FromAsyncResource();
+        // getFakeData.trigger().then( response => {
+        //     /* Proccessing received data */
+        // });
+
+        // // here I will put some delay to give time to FromAsyncResource get ready
+        // setTimeout(()=>{
+        //     // doing action after a short delay
+        //     // this is inside of a closure
+        //     // this is not in the main flow of execution
+        // }, 200 /* delay */);
+
+
+        // // *****************
+        // // *****************
+
+
+        // let getFakeData = new FromAsyncResource();
+        // let receivedData = await getFakeData.trigger()
+        // // do some processing on receivedData
+
+        // await this.simulateDelay(200);
+
+        // // doing action after a short delay
+        // // this is inside of main flow of execution
+
     },
 
     async simulateDelay(delay){
@@ -170,9 +211,7 @@ export default {
 
     addDataToConsole(data){
         this.dataList.push(data);
-    }
-
-
+    },
   }
 }
 </script>
