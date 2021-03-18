@@ -31,7 +31,7 @@ export default {
   data:()=>({
     device : null,
     port : null,
-    baudRate: 57600,
+    baudRate: 115200,
     connected : false,
     reader: null,
     writer: null,
@@ -44,7 +44,7 @@ export default {
   computed: {
     filters() {
         return [
-            { usbVendorId: 0x10C4 }
+            { usbVendorId: 0x09D8 }
         ]
     }
   },
@@ -74,20 +74,22 @@ export default {
             baudRate: this.baudRate,
             dataBits : 8,
             stopBits: 1,
-            parity: "none",
+            parity: "even",
             flowControl: "none"
         })
 
     },
 
     async triggerSendData(){
+		/*
         var str = this.command;
 		var a = [];
 		for (var i = 0, len = str.length; i < len; i+=2) {
 			a.push(parseInt(str.substr(i,2),16));
 		}
 		const data = new Uint8Array(a);
-        //const data = new Uint8Array(this.command); 
+		*/
+        const data = new Uint8Array(this.command); 
         await this.sendData(data); // in this function loginc for sending data with reside;
     },
 
@@ -101,7 +103,7 @@ export default {
         const encoder = new TextEncoder();
         //await this.writer.write(encoder.encode('HELLO'));
         //await this.writer.write(encoder.encode('#'));
-        await this.writer.write(data.buffer);
+        await this.writer.write(encoder.encode(data));
 		console.log('writen');
         this.writer.releaseLock();
     },
@@ -137,30 +139,23 @@ export default {
 
     async startReading() {
         // logics for reading data         
-        //const textDecoder = new TextDecoderStream();
-        //const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
-        //const reader = textDecoder.readable.getReader();
-		const reader = this.port.readable.getReader();
-
+        const textDecoder = new TextDecoderStream();
+        const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
+        const reader = textDecoder.readable.getReader();
+		//const reader = this.port.readable.getReader();
 
         // Listen to data coming from the serial device.
         while (true) {
-			console.log('## before read ##');
-			const { value, done } = await reader.read();
-			if (done) {
-				// Allow the serial port to be closed later.
-				reader.releaseLock();
-				break;
-			}
-			// value is a Uint8Array.
-			console.log("RESPONSE:", value);
-
-			var result = '';
-			for (var i=0; i<value.length; i++) {
-				var temp = "00"+value[i].toString(16);
-				result += temp.substr(temp.length-2)
-			}
-			console.log("ENCODED RESPONSE:", result.toUpperCase());
+				console.log('## before read ##');
+				const { value, done } = await reader.read();
+				console.log(value.length);
+				if (done) {
+					// Allow the serial port to be closed later.
+					reader.releaseLock();
+					break;
+				}
+				// value is a string.
+				console.log("RESPONSE:", value);
         }
 
         // with this peace you can send data to be shown in list below input 
