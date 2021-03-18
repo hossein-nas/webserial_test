@@ -87,7 +87,7 @@ export default {
 		}
 		const data = new Uint8Array(a);
         //const data = new Uint8Array(this.command); 
-        await this.sendData(data); // in this function loginc for sending data with reside;
+        //await this.sendData(data); // in this function loginc for sending data with reside;
 
         this.newSendData(data).then(()=> this.startReading() );
     },
@@ -108,7 +108,7 @@ export default {
     },
 
     async newSendData(data){
-        return new Promise((resolve, reject){
+        return new Promise(async(resolve, reject)=>{
             console.log('## sending data ##')
             console.log("VALUE :", this.command);
             console.log("ENCODED VALUE :", data);
@@ -121,7 +121,7 @@ export default {
             this.writer.releaseLock();
             resolve();
         })
-    }
+    },
 
     async testDelay(){
 
@@ -187,6 +187,7 @@ export default {
         // Listen to data coming from the serial device.
         while (true) {
 			console.log('## before read ##');
+			this.simulateDelay(200);
 			const { value, done } = await reader.read();
 			if (done) {
 				// Allow the serial port to be closed later.
