@@ -47,7 +47,7 @@ export default {
   computed: {
     filters() {
         return [
-            { usbVendorId: 0x10C4 }
+            // { usbVendorId: 0x10C4 }
         ]
     }
   },
@@ -187,20 +187,21 @@ export default {
     },
 
     async startReading() {
-        if( ! this.reader.readable) return;
-        
+        if( this.port.readable.locked) return;
+
 		const reader = this.port.readable.getReader();
         let dataReader = new DataCollector();
+		await this.simulateDelay(200);
 
         while (true) {
 			console.log('## before read ##');
-			await this.simulateDelay(200);
 			const { value, done } = await reader.read();
 			if (done) {
 				// Allow the serial port to be closed later.
 				reader.releaseLock();
 				break;
 			}
+            console.log('reading');
             dataReader.append(value);
         }
         console.log( dataReader.getData() );
