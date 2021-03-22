@@ -187,18 +187,12 @@ export default {
     },
 
     async startReading() {
-        // logics for reading data         
-        //const textDecoder = new TextDecoderStream();
-        //const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
-        //const reader = textDecoder.readable.getReader();
 		const reader = this.port.readable.getReader();
         let dataReader = new DataCollector();
 
-
-        // Listen to data coming from the serial device.
         while (true) {
 			console.log('## before read ##');
-			this.simulateDelay(200);
+			await this.simulateDelay(200);
 			const { value, done } = await reader.read();
 			if (done) {
 				// Allow the serial port to be closed later.
@@ -213,8 +207,6 @@ export default {
 
         dataReader.flush();
 
-        // with this peace you can send data to be shown in list below input 
-        //let dataToBeShown = "PLACEHOLDER DATA";
         //this.addDataToConsole(dataToBeShown);
     },
 
