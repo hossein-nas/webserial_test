@@ -25,6 +25,9 @@
 </template>
 
 <script>
+import DataParser from "../classes/parser";
+import DataCollector from "../classes/DataCollector";
+
 export default {
   name: 'PageIndex',
 
@@ -55,6 +58,13 @@ export default {
     let _Uint8Array = this.HexToUint8(slicedHex);
     console.log(slicedHex);
     console.log(_Uint8Array);
+
+    let res = new DataCollector();
+    res.append('hey');
+    res.append('you');
+    res.append(100);
+    console.log(res.getData());
+    console.log(res.getDataCount());
   },
 
   methods: {
@@ -182,6 +192,7 @@ export default {
         //const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
         //const reader = textDecoder.readable.getReader();
 		const reader = this.port.readable.getReader();
+        let dataReader = new DataCollector();
 
 
         // Listen to data coming from the serial device.
@@ -194,16 +205,13 @@ export default {
 				reader.releaseLock();
 				break;
 			}
-			// value is a Uint8Array.
-			console.log("RESPONSE:", value);
-
-			var result = '';
-			for (var i=0; i<value.length; i++) {
-				var temp = "00"+value[i].toString(16);
-				result += temp.substr(temp.length-2)
-			}
-			console.log("ENCODED RESPONSE:", result.toUpperCase());
+            dataReader.append(value);
         }
+        console.log( dataReader.getData() );
+        console.log( dataReader.getDataCount() );
+        this.addDataToConsole(dataReader.getData() );
+
+        dataReader.flush();
 
         // with this peace you can send data to be shown in list below input 
         //let dataToBeShown = "PLACEHOLDER DATA";
