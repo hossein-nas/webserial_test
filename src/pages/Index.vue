@@ -187,6 +187,8 @@ export default {
     },
 
     async startReading() {
+        if( ! this.reader.readable) return;
+        
 		const reader = this.port.readable.getReader();
         let dataReader = new DataCollector();
 
