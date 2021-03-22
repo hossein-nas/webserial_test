@@ -1,7 +1,7 @@
 <template>
   <q-page class="">
     <div class="flex flex-center q-py-lg">
-        <q-btn label="Connect Serial Device" @click="reqSerialAccess"></q-btn>
+        <q-btn label="Connect Serial Device TWN4" @click="reqSerialAccess"></q-btn>
     </div>
     <div class="row">
         <div class="col-6 q-mx-auto">
@@ -89,8 +89,8 @@ export default {
 		}
 		const data = new Uint8Array(a);
 		*/
-        const data = new Uint8Array(this.command); 
-        await this.sendData(data); // in this function loginc for sending data with reside;
+        //const data = new Uint8Array(this.command); 
+        await this.sendData(this.command+"\r"); // in this function loginc for sending data with reside;
     },
 
     async sendData(data){
@@ -138,30 +138,76 @@ export default {
     },
 
     async startReading() {
-        // logics for reading data         
-        const textDecoder = new TextDecoderStream();
-        const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
-        const reader = textDecoder.readable.getReader();
-		//const reader = this.port.readable.getReader();
+			// logics for reading data         
+			const textDecoder = new TextDecoderStream();
+			const readableStreamClosed = this.port.readable.pipeTo(textDecoder.writable);
+			const reader = textDecoder.readable.getReader();
+			//const reader = this.port.readable.getReader();
 
-        // Listen to data coming from the serial device.
-        while (true) {
-				console.log('## before read ##');
-				const { value, done } = await reader.read();
-				console.log(value.length);
-				if (done) {
-					// Allow the serial port to be closed later.
-					reader.releaseLock();
-					break;
+			// Listen to data coming from the serial device.
+			/*
+			while (true) {
+				try {
+					console.log('## before read ##');
+					const { value, done } = await reader.read();
+					console.log(value.length);
+					if (done) {
+						// Allow the serial port to be closed later.
+						reader.releaseLock();
+						break;
+					}
+					// value is a string.
+					console.log("RESPONSE:", value);
+				} catch (error) {
+					console.log("Error appeared");
+				} finally {
+
 				}
-				// value is a string.
-				console.log("RESPONSE:", value);
-        }
+			}
+			*/
+			
+			let charsReceived = 0;
+			let result = '';
+			// read() returns a promise that resolves
+			  // when a value has been received
+			let value = reader.read().then(function processText({ done, value }) {
+				// Result objects contain two properties:
+				// done  - true if the stream has already given you all its data.
+				// value - some data. Always undefined when done is true.
+				if (done) {
+				  console.log("Stream complete");
+				  para.textContent = result;
+				  return;
+				}
+
+				charsReceived += value.length;
+				const chunk = value;
+				console.log('Read ' + charsReceived + ' characters so far. Current chunk = ' + chunk);
+
+				result += chunk;
+
+				// Read some more, and call this function again
+				return reader.read().then(processText);
+			  });
+			  console.log(result);
 
         // with this peace you can send data to be shown in list below input 
         //let dataToBeShown = "PLACEHOLDER DATA";
         //this.addDataToConsole(dataToBeShown);
     },
+	
+	/*
+	navigator.serial.addEventListener("connect", (event) => {
+		// TODO: Automatically open event.target or warn user a port is available.
+		console.log("connected");
+	});
+
+	navigator.serial.addEventListener("disconnect", (event) => {
+		// TODO: Remove |event.target| from the UI.
+		// If the serial port was opened, a stream error would be observed as well.
+		console.log("disconnected");
+	});
+	*/
 
     addDataToConsole(data){
         this.dataList.push(data);
