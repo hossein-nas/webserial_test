@@ -27,6 +27,7 @@
 <script>
 import DataParser from "../classes/parser";
 import DataCollector from "../classes/DataCollector";
+import utils from '../utilities/utilities';
 
 export default {
   name: 'PageIndex',
@@ -34,7 +35,7 @@ export default {
   data:()=>({
     device : null,
     port : null,
-    baudRate: 57600,
+    baudRate: 9600,
     connected : false,
     reader: null,
     writer: null,
@@ -47,7 +48,7 @@ export default {
   computed: {
     filters() {
         return [
-            // { usbVendorId: 0x10C4 }
+            { usbVendorId: 0x10C4 }
         ]
     }
   },
@@ -55,16 +56,26 @@ export default {
   created(){
     let HexString = "A5010100";
     let slicedHex = this.sliceString(HexString);
-    let _Uint8Array = this.HexToUint8(slicedHex);
+    let _Uint8Array = utils.HexToUint8(slicedHex);
     console.log(slicedHex);
     console.log(_Uint8Array);
 
-    let res = new DataCollector();
-    res.append('hey');
-    res.append('you');
-    res.append(100);
-    console.log(res.getData());
-    console.log(res.getDataCount());
+    console.warn("### Uint to HEX ###");
+
+    let _uint8_array = new Uint8Array([165, 130, 3, 54]);
+    let res = utils.Uint8ToHex(_uint8_array);
+    let res2 = utils.Uint8ToHex(_uint8_array, false);
+    console.log(res);
+    console.log(res2);
+
+    console.warn("### HEX to Actual Bits ###");
+
+    console.log(utils.HexTo8Bit('a5'));
+    console.log(utils.HexTo4Bit('b'));
+    console.log(utils.HexToBits('15b3'));
+
+    console.warn("### TEST DATA COLLECTOR ###");
+    console.log( new DataCollector() );
   },
 
   methods: {
@@ -75,7 +86,6 @@ export default {
 
                 await this.connectDevice();
 			})
-
     },
 
     async connectDevice(){
@@ -178,14 +188,6 @@ export default {
         return sliced.map((item)=>parseInt(item, 16));
     },
 
-    isValidHex(term){
-        return term.match(/^#[a-f0-9]{2}$/i) !== null;
-    },
-
-    HexToUint8(_arr){
-        return new Uint8Array(_arr);
-    },
-
     async startReading() {
         if( this.port.readable.locked) return;
 
@@ -193,18 +195,25 @@ export default {
         let dataReader = new DataCollector();
 		await this.simulateDelay(200);
 
-        while (true) {
-			console.log('## before read ##');
-			const { value, done } = await reader.read();
-			if (done) {
-				// Allow the serial port to be closed later.
-				reader.releaseLock();
-				break;
-			}
-            console.log('reading');
-            dataReader.append(value);
+        try{
+            while (true) {
+                console.log('## before read ##');
+                const { value, done } = await reader.read();
+                if (done) {
+                    alert('done');
+                    // Allow the serial port to be closed later.
+                    reader.releaseLock();
+                    break;
+                }
+                console.log('reading');
+                console.log(value);
+                dataReader.append(value);
+                console.log( dataReader.getData() );
+            }
+
+        }catch(e){
+            console.log(e);
         }
-        console.log( dataReader.getData() );
         console.log( dataReader.getDataCount() );
         this.addDataToConsole(dataReader.getData() );
 
