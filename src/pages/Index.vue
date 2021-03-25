@@ -35,7 +35,7 @@ export default {
   data:()=>({
     device : null,
     port : null,
-    baudRate: 9600,
+    baudRate: 57600,
     connected : false,
     reader: null,
     writer: null,
@@ -205,21 +205,13 @@ export default {
                     reader.releaseLock();
                     break;
                 }
-                console.log('reading');
-                console.log(value);
-                dataReader.append(value);
-                console.log( dataReader.getData() );
+				const data = utils.Uint8ToHex(value, false); // parsing to hex first
+                dataReader.append(data);
             }
 
         }catch(e){
             console.log(e);
         }
-        console.log( dataReader.getDataCount() );
-        this.addDataToConsole(dataReader.getData() );
-
-        dataReader.flush();
-
-        //this.addDataToConsole(dataToBeShown);
     },
 
     addDataToConsole(data){
