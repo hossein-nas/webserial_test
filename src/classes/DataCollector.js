@@ -2,14 +2,16 @@ import DataParser  from './parser';
 export default class DataCollector{
 
     constructor(){
-		this.parsedData = "";
         this.data = "";
         this.dataCount = 0;
         this.parser = new DataParser();
-        let res =  this.parser.parse('A58102004CA3');
-        let res2 =  this.parser.parse('0011ffA5810617FF000400B32555101000010001FF0702320000000000004925');
+        //let res =  this.parser.parse('A58102004CA3');
+        //let res2 =  this.parser.parse('0011ffA5810617FF000400B32555101000010001FF0702320000000000004925');
         //console.log(res, 'one'); // reduce logs in console
         //console.log(res2);
+		let res =  this.parser.parse('A5');
+		console.log(res);
+
     }
 
     append(data){
@@ -29,9 +31,11 @@ export default class DataCollector{
                 this.data += conv_data;
                 this.dataCount += parseInt(conv_data.length, 10);
             }
-			console.log("Collector: " + this.data);    										// added console here
-			this.parsedData = this.parser.parse(this.data); 								// added parser trigger here
-
+			console.log("Collector: " + this.data);    									// added console here
+			let parsedData = this.parser.parse(this.data); 								// added parser trigger here
+			if(parsedData.status == 'successfull'){
+				console.log(Object.values(parsedData));
+			}
         }catch(e){}
     }
 
