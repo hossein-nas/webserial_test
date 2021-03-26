@@ -1,5 +1,6 @@
 import {BaseParser} from './base_parser';
 import utils from '../utilities/utilities';
+import crc from 'crc';
 
 export class HciMessageParser extends BaseParser{
     constructor(data){
@@ -22,6 +23,9 @@ export class HciMessageParser extends BaseParser{
     }
 
     parse(){
+        if( this.text && this.text.length < 8 ){
+            return this.errorResponse();
+        }
 
         if( this.has_SOF() ){
             try{
@@ -29,8 +33,10 @@ export class HciMessageParser extends BaseParser{
                 this.extractMsgHeaders();
 
                 this.addPayload();
+                this.checkCRC16();
             }
             catch(e){
+                console.log(e);
             }
             finally{
                 this.successfull();
@@ -108,6 +114,18 @@ export class HciMessageParser extends BaseParser{
         return false;
     }
 
+    controlField_index(){
+        return this.SOF_index() + 2;
+    }
+
+    crc16_string(){
+        const controlField_index = this.controlField_index();
+        const controlField_length = 3 * 2;
+        const payloadLength = this.getMsgHeaders('payloadLength');
+
+        return this.text.substr(controlField_index,  controlField_length + payloadLength);
+    }
+
     addSOFIndex(index){
         this.parsedText = this.text.substr(index);
 
@@ -123,8 +141,9 @@ export class HciMessageParser extends BaseParser{
     }
 
     extractMsgHeaders(){
-        let sof_index = this.SOF_index() + 2;
-        let header = this.text.slice(sof_index, sof_index+ 3*2);
+        let controlField_index = this.controlField_index();
+        let controlField_length = 3 * 2;
+        let header = this.text.slice(controlField_index, controlField_index+ controlField_length);
         let header_bits = utils.HexToBits(header);
 
         this.controlField(header_bits.substr(0,4));      // for bits 0 -> 3
@@ -179,5 +198,20 @@ export class HciMessageParser extends BaseParser{
     lengthField(bits){
         let payloadLength = parseInt(bits, 2) * 2; // multpying 2 because of every hex char equals to 4bit not 8 bits!!
         this.addMsgHeaders('payloadLength', payloadLength);
+    }
+
+    checkCRC16(){
+        const controlField = this.getMsgHeaders('controlField');
+
+
+        if( controlField.data.crc16_field ){
+
+            const crc16_start_index = this.payloadStartIndex() + this.getMsgHeaders('payloadLength');
+            const crc16 = this.text.slice(crc16_start_index);
+            this.parsedObj['crc16'] = crc16;
+            console.log(this.crc16_string());
+            console.log( crc.crc16xmodem(this.crc16_string()).toString(16))
+            console.log('after');
+        }
     }
 }
