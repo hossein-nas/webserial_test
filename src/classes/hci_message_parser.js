@@ -1,10 +1,11 @@
 import {BaseParser} from './base_parser';
 import utils from '../utilities/utilities';
-import crc from 'crc';
+const CRC = require('crc-full').CRC;
 
 export class HciMessageParser extends BaseParser{
     constructor(data){
         super();
+        this.crc = CRC.default('CRC16_X_25');
         this.text = '';
         this.parsedText = null;
         this.parsedObj = {
@@ -209,8 +210,8 @@ export class HciMessageParser extends BaseParser{
             const crc16_start_index = this.payloadStartIndex() + this.getMsgHeaders('payloadLength');
             const crc16 = this.text.slice(crc16_start_index);
             this.parsedObj['crc16'] = crc16;
-            console.log(this.crc16_string());
-            console.log( crc.crc16xmodem(this.crc16_string()).toString(16))
+            const crc16_string_uint8 = utils.HexStringToUint8(this.crc16_string());
+            console.log( this.crc.compute(crc16_string_uint8).toString(16));
             console.log('after');
         }
     }

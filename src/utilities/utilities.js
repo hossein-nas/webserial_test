@@ -6,6 +6,19 @@ function HexToUint8(_arr){
     return new Uint8Array(_arr);
 }
 
+function HexStringToUint8(hex_string){
+    const pairs = hex_string.match(/[\dA-F]{2}/gi);
+    
+    // convert the octets to integers
+    const integers = pairs.map(function(s) {
+        return parseInt(s, 16);
+    });
+    
+    const array = new Uint8Array(integers);
+    
+    return array;
+}
+
 function HexTo8Bit(hex){
     if(typeof hex == 'string'){
         return parseInt(hex, 16).toString(2).padStart(8, '0');
@@ -45,6 +58,7 @@ function Uint8ToHex(_unit_array, res_array = true){
 export default {
     isValidHex,
     HexToUint8,
+    HexStringToUint8,
     HexTo8Bit,
     HexTo4Bit,
     HexToBits,
