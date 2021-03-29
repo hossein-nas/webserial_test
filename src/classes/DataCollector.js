@@ -33,6 +33,7 @@ export default class DataCollector{
 			let parsedData = this.parser.parse(this.data); 								// added parser trigger here
 			if(parsedData.status == 'successfull'){
 				console.log(Object.values(parsedData));
+				this.data = "";
 			}
         }catch(e){}
     }
