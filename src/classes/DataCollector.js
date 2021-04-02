@@ -29,9 +29,9 @@ export default class DataCollector{
                 this.data += conv_data;
                 this.dataCount += parseInt(conv_data.length, 10);
             }
-			console.log("Collector: " + this.data);    									// added console here
 			let parsedData = this.parser.parse(this.data); 								// added parser trigger here
 			if(parsedData.status == 'successfull'){
+				console.log("Collector: " + this.data);    									// added console here
 				console.log(Object.values(parsedData));
 				this.data = "";
 			}
