@@ -32,15 +32,18 @@ export class HciMessageParser extends BaseParser{
             try{
                 this.addSOFIndex( this.SOF_index() );
                 this.extractMsgHeaders();
+                this.checkDataValidity();
 
                 this.addPayload();
                 this.checkCRC16();
+
+                this.successfull();
             }
             catch(e){
                 console.log(e);
+                return this.errorResponse();
             }
             finally{
-                this.successfull();
             }
         }
 
@@ -153,9 +156,32 @@ export class HciMessageParser extends BaseParser{
         this.lengthField(header_bits.substr(16,8))         // for bits 16 -> end
     }
 
-    addPayload(){
+    checkDataValidity(){
+        const SOF_length = 2 // byte
+        const controlFields_length = 6 // byte
+
+        const payload_length = this.getPayload().length;
+
+        const crc16Field_length = this.crc16IsEnabled() ? 4 : 0;
+
+        const total = SOF_length + controlFields_length + payload_length + crc16Field_length;
+        console.log("Total: ", total);
+        console.log("Text : ", this.text.length);
+
+        if( total > this.text.length ){
+            return throw new Error('Data Corruption!')
+        }
+
+        return true;
+    }
+
+    getPayload(){
         let payloadLength = this.getMsgHeaders('payloadLength');
-        let payload = this.text.substr(this.payloadStartIndex(), payloadLength );
+        return this.text.substr(this.payloadStartIndex(), payloadLength );
+    }
+
+    addPayload(){
+        const payload = this.getPayload();
 
         this.parsedObj.payload = payload;
 
@@ -201,18 +227,18 @@ export class HciMessageParser extends BaseParser{
         this.addMsgHeaders('payloadLength', payloadLength);
     }
 
-    checkCRC16(){
+    crc16IsEnabled(){
         const controlField = this.getMsgHeaders('controlField');
+        return controlField.data.crc16_field;
+    }
 
-
-        if( controlField.data.crc16_field ){
-
+    checkCRC16(){
+        if( this.crc16IsEnabled() ){
             const crc16_start_index = this.payloadStartIndex() + this.getMsgHeaders('payloadLength');
             const crc16 = this.text.slice(crc16_start_index);
             this.parsedObj['crc16'] = crc16;
             const crc16_string_uint8 = utils.HexStringToUint8(this.crc16_string());
             console.log( this.crc.compute(crc16_string_uint8).toString(16));
-            console.log('after');
         }
     }
 }

@@ -75,7 +75,7 @@ export default {
     console.log(utils.HexToBits('15b3'));
 
     console.warn("### TEST DATA COLLECTOR ###");
-    console.log( new DataCollector() );
+     new DataCollector();
   },
 
   methods: {

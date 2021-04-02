@@ -7,8 +7,12 @@ export default class DataCollector{
         this.parser = new DataParser();
         let res =  this.parser.parse('0011ffA5810617FF000400B32555101000010001FF0702320000000000004925');
         // let res =  this.parser.parse('A58102004CA3');
+        let res2 =  this.parser.parse('A582033644E61E56190001020E7268230123E61E3C0349302065C69A586A02308C62890E');
 		// let res =  this.parser.parse('A5');
+        console.log('WITHOUT ERROR:')
 		console.log(res);
+        console.log('WITH ERROR:')
+        console.log(res2);
 
     }
 
