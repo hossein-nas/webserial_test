@@ -8,9 +8,9 @@
                 <div class="row">
                     <div class="col-12 q-mx-auto">
                         <div class="header flex justify-center q-pa-sm">
-                            <q-btn label="Show Config" size="6px" no-caps padding="sm" flat unelevated color="blue-8" @click.prevent="serialConfig.show = !serialConfig.show"></q-btn>
+                            <q-btn label="Show Config" size="6px" no-caps padding="sm" flat unelevated color="blue-8" @click.prevent="toggleConfig"></q-btn>
                         </div>
-                        <div class="form-body q-mt-lg" v-show="serialConfig.show">
+                        <div class="form-body q-mt-lg" v-show="show">
                             <q-form class="">
                                 <div class="row q-col-gutter-lg">
                                     <div class="col-6">
@@ -53,6 +53,10 @@
                                             />
                                         </div>
                                     </div>
+
+                                    <div class="col-12">
+                                        <q-btn label="Reset Config" size="sm" dense color="brown-6" padding="sm" @click="initConfig()"></q-btn>
+                                    </div>
                                 </div>
                             </q-form>
                         </div>
@@ -68,25 +72,43 @@
         name: 'connectDevice',
         data () {
             return {
-                serialConfig : {
-                    show: false,
-                    baudRate : 9600,
-                    dataBits : 8,
-                    stopBits : 1,
-                    parity : 'none',
-                    flowControl: 'none',
-                    bufferSize: 255
-                },
+                serialConfig : {},
+                show: false,
             }
         },
 
         methods:{
             promptDevice(){
                 this.$emit('prompt', this.serialConfig);
+            },
+
+            initConfig(){
+                this.serialConfig = {
+                    ...this.serialConfigDefault
+                }
+            },
+
+            toggleConfig(){
+                this.show = ! this.show;
             }
         },
 
+        beforeMount(){
+            this.initConfig();
+        },
+
         computed:{
+            serialConfigDefault(){
+                return {
+                    baudRate : 9600,
+                    dataBits : 8,
+                    stopBits : 1,
+                    parity : 'none',
+                    flowControl: 'none',
+                    bufferSize: 255
+                } 
+            },
+
             deviceDefaultOptions(){
                 return {
                     baudRate: [

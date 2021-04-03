@@ -2,6 +2,7 @@
   <q-page class="">
     <div class="row">
         <connectDevice @prompt="reqSerialAccess" v-show="!connected"></connectDevice>
+        <div v-show="connected">Connected</div>
     </div>
 
 </q-page>
@@ -31,10 +32,19 @@
             ]
         }),
 
+        watch:{
+            connected(newVal){
+                if( newVal ){
+                    console.log('redirecting');
+                    this.$router.push({ name : 'working', params: { data : this.port } });
+                }
+            },
+        },
+
         computed: {
             filters() {
                 return [
-                    { usbVendorId: 0x10C4 }
+                    // { usbVendorId: 0x10C4 }
                 ]
             },
         },

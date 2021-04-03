@@ -3,7 +3,7 @@
         <q-header elevated>
             <q-toolbar>
                 <q-toolbar-title>
-                    <q-btn flat color="white" :to="{ path: '/' }">
+                    <q-btn flat color="white" to="/">
                         Bisar App
                     </q-btn>
                 </q-toolbar-title>
