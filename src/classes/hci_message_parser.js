@@ -36,6 +36,8 @@ export class HciMessageParser extends BaseParser{
 
                 this.addPayload();
                 this.checkCRC16();
+                this.checkRSSI();
+                this.checkTimestamp();
 
                 this.successfull();
             }
@@ -193,6 +195,10 @@ export class HciMessageParser extends BaseParser{
         return payloadStartIndex;
     }
 
+    payloadEndIndex(){
+        return this.payloadStartIndex() + this.getMsgHeaders('payloadLength');
+    }
+
     controlField(bits){
         let timestamp = bits.charAt('2') == "1" ? true: false;
         let rssi_field = bits.charAt('1') == "1" ? true: false;
@@ -206,6 +212,17 @@ export class HciMessageParser extends BaseParser{
                 crc16_field
             }
         })
+    }
+
+    getControlField(field = null){
+        const controlField = this.getMsgHeaders('controlField');
+        const dataField = controlField.data
+
+        if( field && dataField.hasOwnProperty(field) ){
+            return controlField.data[field];
+        }
+
+        return controlField.data;
     }
 
     endpointID(bits){
@@ -228,17 +245,62 @@ export class HciMessageParser extends BaseParser{
     }
 
     crc16IsEnabled(){
-        const controlField = this.getMsgHeaders('controlField');
-        return controlField.data.crc16_field;
+        return this.getControlField('crc16_field');
+    }
+
+    RSSIIsEnabled(){
+        return this.getControlField('rssi_field');
+    }
+
+    TimeStampIsEnabled(){
+        return this.getControlField('timestamp');
+    }
+
+    calcCRC16StartingIndex(){
+        const crc16IndexPadding = 0
+
+        if( this.getControlField('timestamp')) crc16IndexPadding+=4;
+        if( this.getControlField('rssi_field')) crc16IndexPadding+=1;
+
+        console.log('CRC 16 Starting Padding: ', crc16IndexPadding);
+        console.log('CRC 16 Starting Index: ', (this.payloadEndIndex() + crc16IndexPadding) );
+
+        return this.payloadEndIndex() + crc16IndexPadding ;
+    }
+
+    calcRSSIStartingIndex(){
+        const rssiIndexPadding = 0
+
+        if( this.getControlField('timestamp')) rssiIndexPadding  +=4;
+
+        console.log('RSSI Starting Padding: ', rssiIndexPadding );
+        console.log('RSSI Starting Index: ', (this.payloadEndIndex() + rssiIndexPadding ) );
+        return this.payloadEndIndex() + rssiIndexPadding  ;
     }
 
     checkCRC16(){
         if( this.crc16IsEnabled() ){
-            const crc16_start_index = this.payloadStartIndex() + this.getMsgHeaders('payloadLength');
+            const crc16_start_index = this.calcCRC16StartingIndex();
             const crc16 = this.text.slice(crc16_start_index);
             this.parsedObj['crc16'] = crc16;
             const crc16_string_uint8 = utils.HexStringToUint8(this.crc16_string());
             console.log( this.crc.compute(crc16_string_uint8).toString(16));
+        }
+    }
+
+    checkRSSI(){
+        if(this.RSSIIsEnabled() ){
+            const rssi_start_index = this.calcRSSIStartingIndex();
+            const rssi = this.text.substr(rssi_start_index, 1);
+            this.parsedObj['rssi'] = rssi;
+        }
+    }
+
+    checkTimestamp(){
+        if(this.TimeStampIsEnabled() ){
+            const timestamp_start_index= this.payloadEndIndex();
+            const timestamp = this.text.substr(timestamp_start_index, 4);
+            this.parsedObj['timestamp'] = timestamp;
         }
     }
 }

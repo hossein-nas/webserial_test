@@ -1,222 +1,153 @@
 <template>
   <q-page class="">
-    <div class="flex flex-center q-py-lg">
-        <q-btn label="Connect Serial Device" @click="reqSerialAccess"></q-btn>
-    </div>
     <div class="row">
-        <div class="col-6 q-mx-auto">
-            <div class="q-mx-auto flex">
-                <q-input v-model.trim="command" label="Write :" class="col-grow"></q-input>
-                <q-btn label="Send Data" class="q-ml-sm q-px-sm" outline :ripple="false" @click="triggerSendData" dense></q-btn>
-                <q-btn label="Start Reading" class="q-ml-sm q-px-sm" outline :ripple="false" @click="startReading" dense></q-btn>
-            </div>
-        </div>
+        <connectDevice @prompt="reqSerialAccess" v-show="!connected"></connectDevice>
     </div>
-    <div class="row">
-        <div class="col-6 q-mx-auto">
-            <q-list bordered separator>
-              <q-item clickable v-ripple v-for="(data, ind) in dataList" :key="ind">
-                <q-item-section>{{data}}</q-item-section>
-              </q-item>
-            </q-list>
-        </div>
-    </div>
-  </q-page>
+
+</q-page>
 </template>
 
 <script>
-import DataParser from "../classes/parser";
-import DataCollector from "../classes/DataCollector";
-import utils from '../utilities/utilities';
+    import connectDevice from '../components/ConnectDevice'
+    import DataParser from "../classes/parser";
+    import DataCollector from "../classes/DataCollector";
+    import utils from '../utilities/utilities';
 
-export default {
-  name: 'PageIndex',
+    export default {
+        name: 'PageIndex',
+        components : {
+            connectDevice
+        },
+        data:()=>({
+            device : null,
+            port : null,
+            config : {},
+            connected : false,
+            reader: null,
+            writer: null,
+            command: '',
+            dataList: [
+            'fake DATA 01', 
+            ]
+        }),
 
-  data:()=>({
-    device : null,
-    port : null,
-    baudRate: 57600,
-    connected : false,
-    reader: null,
-    writer: null,
-    command: '',
-    dataList: [
-        'fake DATA 01', 
-    ]
-  }),
+        computed: {
+            filters() {
+                return [
+                    { usbVendorId: 0x10C4 }
+                ]
+            },
+        },
 
-  computed: {
-    filters() {
-        return [
-            { usbVendorId: 0x10C4 }
-        ]
-    }
-  },
+        created(){
+            console.warn("### Uint to HEX ###");
 
-  created(){
-    let HexString = "A5010100";
-    let slicedHex = this.sliceString(HexString);
-    let _Uint8Array = utils.HexToUint8(slicedHex);
-    console.log(slicedHex);
-    console.log(_Uint8Array);
+            let _uint8_array = new Uint8Array([165, 130, 3, 54]);
+            let res = utils.Uint8ToHex(_uint8_array);
+            let res2 = utils.Uint8ToHex(_uint8_array, false);
+            console.log(res);
+            console.log(res2);
 
-    console.warn("### Uint to HEX ###");
+            console.warn("### HEX to Actual Bits ###");
 
-    let _uint8_array = new Uint8Array([165, 130, 3, 54]);
-    let res = utils.Uint8ToHex(_uint8_array);
-    let res2 = utils.Uint8ToHex(_uint8_array, false);
-    console.log(res);
-    console.log(res2);
+            console.log(utils.HexTo8Bit('a5'));
+            console.log(utils.HexTo4Bit('b'));
+            console.log(utils.HexToBits('15b3'));
 
-    console.warn("### HEX to Actual Bits ###");
+            console.warn("### TEST DATA COLLECTOR ###");
+            new DataCollector();
+        },
 
-    console.log(utils.HexTo8Bit('a5'));
-    console.log(utils.HexTo4Bit('b'));
-    console.log(utils.HexToBits('15b3'));
+        methods: {
+            reqSerialAccess(config){
+                navigator.serial.requestPort({ filters: this.filters})
+                .then( async (response) =>{
+                    this.port = response;
+                    this.config = config
 
-    console.warn("### TEST DATA COLLECTOR ###");
-     new DataCollector();
-  },
+                    await this.connectDevice(config);
+                })
+            },
 
-  methods: {
-    reqSerialAccess(){
-        navigator.serial.requestPort({ filters: this.filters})
-            .then( async (response) =>{
-                this.port = response;
+            async connectDevice(config){
+                await this.port.open(config)
 
-                await this.connectDevice();
-			})
-    },
+                this.connected = true;
+            },
 
-    async connectDevice(){
-        await this.port.open({
-            baudRate: this.baudRate,
-            dataBits : 8,
-            stopBits: 1,
-            parity: "none",
-            flowControl: "none"
-        })
-
-    },
-
-    async triggerSendData(){
-        var str = this.command;
-		var a = [];
-		for (var i = 0, len = str.length; i < len; i+=2) {
-			a.push(parseInt(str.substr(i,2),16));
-		}
-		const data = new Uint8Array(a);
-        //const data = new Uint8Array(this.command); 
-        //await this.sendData(data); // in this function loginc for sending data with reside;
-
-        this.newSendData(data).then(()=> this.startReading() );
-    },
-
-    async sendData(data){
-        console.log('## sending data ##')
-        console.log("VALUE :", this.command);
-        console.log("ENCODED VALUE :", data);
-
-        // logics for sending data
-		this.writer = await this.port.writable.getWriter();
-        const encoder = new TextEncoder();
-        //await this.writer.write(encoder.encode('HELLO'));
-        //await this.writer.write(encoder.encode('#'));
-        await this.writer.write(data.buffer);
-		console.log('writen');
-        this.writer.releaseLock();
-    },
-
-    async newSendData(data){
-        return new Promise(async(resolve, reject)=>{
-            console.log('## sending data ##')
-            console.log("VALUE :", this.command);
-            console.log("ENCODED VALUE :", data);
-
-            // logics for sending data
-            this.writer = await this.port.writable.getWriter();
-            const encoder = new TextEncoder();
-            await this.writer.write(data.buffer);
-            console.log('writen');
-            this.writer.releaseLock();
-            resolve();
-        })
-    },
-
-    async testDelay(){
-
-        // let getFakeData = new FromAsyncResource();
-        // getFakeData.trigger().then( response => {
-        //     /* Proccessing received data */
-        // });
-
-        // // here I will put some delay to give time to FromAsyncResource get ready
-        // setTimeout(()=>{
-        //     // doing action after a short delay
-        //     // this is inside of a closure
-        //     // this is not in the main flow of execution
-        // }, 200 /* delay */);
-
-
-        // // *****************
-        // // *****************
-
-
-        // let getFakeData = new FromAsyncResource();
-        // let receivedData = await getFakeData.trigger()
-        // // do some processing on receivedData
-
-        // await this.simulateDelay(200);
-
-        // // doing action after a short delay
-        // // this is inside of main flow of execution
-
-    },
-
-    async simulateDelay(delay){
-        return new Promise( (resolve, reject) => {
-            setTimeout(()=> resolve(), delay);
-        })
-    },
-
-    sliceString(_str, len){
-        if(_str.length % 2 == 1 ){
-            _str = '0' + _str;
-        }
-        _str = _str.toUpperCase();
-        let sliced = _str.match(/(\w){2}/g)
-        return sliced.map((item)=>parseInt(item, 16));
-    },
-
-    async startReading() {
-        if( this.port.readable.locked) return;
-
-		const reader = this.port.readable.getReader();
-        let dataReader = new DataCollector();
-		await this.simulateDelay(200);
-
-        try{
-            while (true) {
-                console.log('## before read ##');
-                const { value, done } = await reader.read();
-                if (done) {
-                    alert('done');
-                    // Allow the serial port to be closed later.
-                    reader.releaseLock();
-                    break;
+            async triggerSendData(){
+                var str = this.command;
+                var a = [];
+                for (var i = 0, len = str.length; i < len; i+=2){
+                    a.push(parseInt(str.substr(i,2),16));
                 }
-				const data = utils.Uint8ToHex(value, false); // parsing to hex first
-                dataReader.append(data);
-            }
+                const data = new Uint8Array(a);
+                //const data = new Uint8Array(this.command); 
+                //await this.sendData(data); // in this function loginc for sending data with reside;
 
-        }catch(e){
-            console.log(e);
+                this.newSendData(data).then(()=> this.startReading() );
+            },
+
+            async sendData(data){
+                console.log('## sending data ##')
+                console.log("VALUE :", this.command);
+                console.log("ENCODED VALUE :", data);
+
+                // logics for sending data
+                this.writer = await this.port.writable.getWriter();
+                const encoder = new TextEncoder();
+                //await this.writer.write(encoder.encode('HELLO'));
+                //await this.writer.write(encoder.encode('#'));
+                await this.writer.write(data.buffer);
+                console.log('writen');
+                this.writer.releaseLock();
+            },
+
+            async newSendData(data){
+                return new Promise(async(resolve, reject)=>{
+                    console.log('## sending data ##')
+                    console.log("VALUE :", this.command);
+                    console.log("ENCODED VALUE :", data);
+
+                    // logics for sending data
+                    this.writer = await this.port.writable.getWriter();
+                    const encoder = new TextEncoder();
+                    await this.writer.write(data.buffer);
+                    console.log('writen');
+                    this.writer.releaseLock();
+                    resolve();
+                })
+            },
+
+            async startReading() {
+                if( this.port.readable.locked) return;
+
+                const reader = this.port.readable.getReader();
+                let dataReader = new DataCollector();
+                await this.simulateDelay(200);
+
+                try{
+                    while (true) {
+                        console.log('## before read ##');
+                        const { value, done } = await reader.read();
+                        if (done) {
+                            alert('done');
+                            // Allow the serial port to be closed later.
+                            reader.releaseLock();
+                            break;
+                        }
+        				const data = utils.Uint8ToHex(value, false); // parsing to hex first
+                        dataReader.append(data);
+                    }
+
+                }catch(e){
+                    console.log(e);
+                }
+            },
+
+            addDataToConsole(data){
+                this.dataList.push(data);
+            },
         }
-    },
-
-    addDataToConsole(data){
-        this.dataList.push(data);
-    },
-  }
-}
+    }
 </script>

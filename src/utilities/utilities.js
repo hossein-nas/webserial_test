@@ -55,6 +55,41 @@ function Uint8ToHex(_unit_array, res_array = true){
         return hex_array.join('');
 }
 
+
+async function testDelay(){
+    // let getFakeData = new FromAsyncResource();
+    // getFakeData.trigger().then( response => {
+    //     /* Proccessing received data */
+    // });
+
+    // // here I will put some delay to give time to FromAsyncResource get ready
+    // setTimeout(()=>{
+    //     // doing action after a short delay
+    //     // this is inside of a closure
+    //     // this is not in the main flow of execution
+    // }, 200 /* delay */);
+
+
+    // // *****************
+    // // *****************
+
+
+    // let getFakeData = new FromAsyncResource();
+    // let receivedData = await getFakeData.trigger()
+    // // do some processing on receivedData
+
+    // await this.simulateDelay(200);
+
+    // // doing action after a short delay
+    // // this is inside of main flow of execution
+}
+
+async function simulateDelay(delay){
+    return new Promise( (resolve, reject) => {
+        setTimeout(()=> resolve(), delay);
+    })
+}
+
 export default {
     isValidHex,
     HexToUint8,
@@ -62,5 +97,6 @@ export default {
     HexTo8Bit,
     HexTo4Bit,
     HexToBits,
+    simulateDelay,
     Uint8ToHex
 }
