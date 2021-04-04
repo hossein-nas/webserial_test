@@ -3,7 +3,7 @@
         <q-header elevated>
             <q-toolbar>
                 <q-toolbar-title>
-                    <q-btn flat color="white" to="/">
+                    <q-btn flat color="white" :to="{ name : 'index', params : { reset : true } }" >
                         Bisar App
                     </q-btn>
                 </q-toolbar-title>
@@ -13,7 +13,9 @@
         </q-header>
 
         <q-page-container>
-            <router-view />
+            <keep-alive>
+                <router-view />
+            </keep-alive>
         </q-page-container>
     </q-layout>
 </template>

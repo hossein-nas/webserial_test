@@ -1,11 +1,13 @@
 <template>
-  <q-page class="">
-    <div class="row">
-        <connectDevice @prompt="reqSerialAccess" v-show="!connected"></connectDevice>
-        <div v-show="connected">Connected</div>
-    </div>
-
-</q-page>
+    <q-page class="">
+        <div class="row">
+            <connectDevice @prompt="reqSerialAccess" v-show="!connected"></connectDevice>
+            <div v-show="connected" class="col-6 q-gutter-sm q-mx-auto q-pa-lg flex justify-center">
+                <q-btn label="Send me to Main Page" @click="redirectToWorking" no-caps dense padding="sm" color="teal-4" unelevated></q-btn>
+                <q-btn label="Disconnect Device" @click="flush" no-caps dense padding="sm" color="red-4" unelevated></q-btn>
+            </div>
+        </div>
+    </q-page>
 </template>
 
 <script>
@@ -28,15 +30,14 @@
             writer: null,
             command: '',
             dataList: [
-            'fake DATA 01', 
+                'fake DATA 01', 
             ]
         }),
 
         watch:{
             connected(newVal){
                 if( newVal ){
-                    console.log('redirecting');
-                    this.$router.push({ name : 'working', params: { data : this.port } });
+                    this.redirectToWorking();
                 }
             },
         },
@@ -68,7 +69,31 @@
             new DataCollector();
         },
 
+        async beforeMount(){
+            await this.flush();
+        },
+
         methods: {
+            async flush(){
+                if( this.port ){
+                    const readable = this.port.readable.getReader();
+                    await readable.releaseLock();
+                    await this.port.close();
+
+                    this.connected = false;
+                    this.port = null;
+                }
+                if( this.$route.params.withErrors ){
+                    alert('error');
+                    this.$forceUpdate();
+                }
+            },
+
+            redirectToWorking(){
+                console.log('redirecting');
+                this.$router.push({ name : 'working', params: { data : this.port } });
+            },
+
             reqSerialAccess(config){
                 navigator.serial.requestPort({ filters: this.filters})
                 .then( async (response) =>{

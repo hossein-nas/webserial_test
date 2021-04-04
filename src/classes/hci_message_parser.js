@@ -128,8 +128,9 @@ export class HciMessageParser extends BaseParser{
         const controlField_index = this.controlField_index();
         const controlField_length = 3 * 2;
         const payloadLength = this.getMsgHeaders('payloadLength');
+        const crc16_start_index = this.calcCRC16StartingIndex();
 
-        return this.text.substr(controlField_index,  controlField_length + payloadLength);
+        return this.text.slice(controlField_index, crc16_start_index);
     }
 
     addSOFIndex(index){
@@ -164,9 +165,10 @@ export class HciMessageParser extends BaseParser{
 
         const payload_length = this.getPayload().length;
 
-        const crc16Field_length = this.crc16IsEnabled() ? 4 : 0;
+        const optionalFields_length = this.calcOptionalFieldsLength();
 
-        const total = SOF_length + controlFields_length + payload_length + crc16Field_length;
+        const total = SOF_length + controlFields_length + payload_length + optionalFields_length;
+
         console.log("Total: ", total);
         console.log("Text : ", this.text.length);
 
@@ -257,10 +259,10 @@ export class HciMessageParser extends BaseParser{
     }
 
     calcCRC16StartingIndex(){
-        const crc16IndexPadding = 0
+        let crc16IndexPadding = 0
 
-        if( this.getControlField('timestamp')) crc16IndexPadding+=4;
-        if( this.getControlField('rssi_field')) crc16IndexPadding+=1;
+        if( this.getControlField('timestamp')) crc16IndexPadding+=8;
+        if( this.getControlField('rssi_field')) crc16IndexPadding+=2;
 
         console.log('CRC 16 Starting Padding: ', crc16IndexPadding);
         console.log('CRC 16 Starting Index: ', (this.payloadEndIndex() + crc16IndexPadding) );
@@ -269,13 +271,21 @@ export class HciMessageParser extends BaseParser{
     }
 
     calcRSSIStartingIndex(){
-        const rssiIndexPadding = 0
+        let rssiIndexPadding = 0
 
-        if( this.getControlField('timestamp')) rssiIndexPadding  +=4;
+        if( this.getControlField('timestamp')) rssiIndexPadding  +=8;
 
         console.log('RSSI Starting Padding: ', rssiIndexPadding );
         console.log('RSSI Starting Index: ', (this.payloadEndIndex() + rssiIndexPadding ) );
         return this.payloadEndIndex() + rssiIndexPadding  ;
+    }
+
+    calcOptionalFieldsLength(){
+        const crc16_length = this.crc16IsEnabled() ? 4 : 0;
+        const rssi_length = this.RSSIIsEnabled() ? 2 : 0;
+        const timestamp_length = this.TimeStampIsEnabled() ? 8 : 0;
+
+        return crc16_length + rssi_length + timestamp_length ;
     }
 
     checkCRC16(){
@@ -284,14 +294,21 @@ export class HciMessageParser extends BaseParser{
             const crc16 = this.text.slice(crc16_start_index);
             this.parsedObj['crc16'] = crc16;
             const crc16_string_uint8 = utils.HexStringToUint8(this.crc16_string());
-            console.log( this.crc.compute(crc16_string_uint8).toString(16));
+
+            const calced_crc16 = this.crc.compute(crc16_string_uint8)
+                                            .toString(16)
+                                            .toUpperCase();
+                                            
+            if( crc16 !== this.reverseCRC( calced_crc16 ) ){
+                return throw new Error('CRC NOT MATCHED');
+            }
         }
     }
 
     checkRSSI(){
         if(this.RSSIIsEnabled() ){
             const rssi_start_index = this.calcRSSIStartingIndex();
-            const rssi = this.text.substr(rssi_start_index, 1);
+            const rssi = this.text.substr(rssi_start_index, 2);
             this.parsedObj['rssi'] = rssi;
         }
     }
@@ -299,8 +316,12 @@ export class HciMessageParser extends BaseParser{
     checkTimestamp(){
         if(this.TimeStampIsEnabled() ){
             const timestamp_start_index= this.payloadEndIndex();
-            const timestamp = this.text.substr(timestamp_start_index, 4);
+            const timestamp = this.text.substr(timestamp_start_index, 8);
             this.parsedObj['timestamp'] = timestamp;
         }
+    }
+
+    reverseCRC(text){
+        return text.match(/.{2}/gi).reverse().join('')
     }
 }
