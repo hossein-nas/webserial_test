@@ -1,22 +1,22 @@
 import DataParser  from './parser';
 export default class DataCollector{
 
-    constructor(){
+    constructor( callback = null){
         this.data = "";
         this.dataCount = 0;
         this.parser = new DataParser();
-        // let res =  this.parser.parse('0011ffA5810617FF000400B32555101000010001FF0702320000000000004925');
+        this.callback = (callback) ? callback : undefined ;
+/*        let res =  this.parser.parse('0011ffA5810617FF000400B32555101000010001FF0702320000000000004925');
         let res =  this.parser.parse('A58102004CA3');
         let res2 =  this.parser.parse('A582033644E61E56190001020E7268230123E61E3C0349302065C69A586A02308C62890E');
         let res3 =  this.parser.parse('A5E2031944E61EBF0743097911B2312D52167B9D058EA5B76FD7EE582B60682440123187');
-		// let res =  this.parser.parse('A5');
-        console.log('WITHOUT ERROR:')
-		console.log(res);
-        console.log('WITH ERROR:')
+        console.log('without error:')
+        console.log(res);
+        console.log('with error:')
         console.log(res2);
-        console.log('New MSG :')
+        console.log('new msg :')
         console.log(res3);
-    }
+*/    }
 
     append(data){
         try{
@@ -35,11 +35,14 @@ export default class DataCollector{
                 this.data += conv_data;
                 this.dataCount += parseInt(conv_data.length, 10);
             }
+            console.log('Going to be parsed:', this.data);
 			let parsedData = this.parser.parse(this.data); 			// added parser trigger here
 			if(parsedData.status == 'successfull'){
 				console.log("Collector: ", parsedData);    	   // added console here
 				this.data = "";
                 this.dataCount++;
+
+                this.callback.call({}, parsedData, this.dataCount);
 			}
         }catch(e){}
     }
@@ -50,6 +53,12 @@ export default class DataCollector{
 
     getDataCount(){
         return this.dataCount;
+    }
+
+    setCallback(callback){
+        if(callback){
+            this.callback = callback;
+        }
     }
 
     flush(){

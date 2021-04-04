@@ -24,7 +24,14 @@
                 </div>
                 <q-separator spaced="xl"></q-separator>
                 <div class="log-section">
-                    LOGGER
+                    <p class="text-body text-bold text-grey-6 q-pa-none q-ma-none q-mb-sm">Logs</p>
+                    <div id="logs-area" :class="{ 'no-data' : !messagesCount }">
+                        <template inline v-for="(item, ind) in messages" >
+                            <LogMessage :value="item" :key="item.parsed" :index="ind+1"></LogMessage>
+                        </template>
+                       
+                       <p v-if="!messagesCount" class="text-body text-grey-8 ">No data has been received yet.</p> 
+                    </div>
                 </div>
                 
             </div>
@@ -39,15 +46,21 @@
 <script>
     import DataCollector from '../classes/DataCollector';
     import utils from '../utilities/utilities';
+    import LogMessage from '../components/LogMessage'
 
     export default {
         name: 'Working',
+
+        components: {
+            LogMessage,
+        },
 
         data(){
             return {
                 device : null,
                 command: '',
                 initialized : false,
+                receivedMessages: [],
             }
         },
 
@@ -67,6 +80,21 @@
                 this.device = this._device;
                 this.initialized = !! this._device;
             }
+        },
+
+        filters :{
+            titleCase(val){
+                let _val = val.replace('_', ' ').toLowerCase();
+                return titleCase(_val);
+            }
+        },
+
+        created(){
+            let dataReader = new DataCollector(this.Logger);
+            dataReader.append('A5E2031944E61EBF0743097911B2312D52167B9D058EA5B76FD7EE582B60682440123187');
+            dataReader.append('A58102004CA3');
+            dataReader.append('0011ffA5810617FF000400B32555101000010001FF0702320000000000004925');
+            dataReader.append('A582033644E61E56190001020E7268230123E61E3C0349302065C69A586A02308C62890E');
         },
 
         methods: {
@@ -122,11 +150,16 @@
                 })
             },
 
+            Logger(data, count){
+                this.receivedMessages.push(data);
+                console.log(data, count);
+            },
+
             async startReading() {
                 if( this.device.readable.locked) return;
 
                 const reader = this.device.readable.getReader();
-                let dataReader = new DataCollector();
+                let dataReader = new DataCollector(this.Logger);
 
                 try{
                     while (true) {
@@ -149,6 +182,14 @@
         },
 
         computed:{
+            messages(){
+                return this.receivedMessages.reverse();
+            },
+
+            messagesCount(){
+                return this.receivedMessages.length;
+            },
+
             _device(){
                 if( this.$route.params.data ){
                     return this.$route.params.data;
@@ -168,3 +209,19 @@
         }
     }
 </script>
+
+<style lang="scss">
+    #logs-area{
+        background-color: whitesmoke;
+        padding: 1rem;
+        border: 1px solid $grey-4;
+        min-height: 10rem;
+
+        &.no-data{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+    }
+</style>

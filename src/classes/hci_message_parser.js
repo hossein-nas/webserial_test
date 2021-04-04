@@ -5,14 +5,8 @@ const CRC = require('crc-full').CRC;
 export class HciMessageParser extends BaseParser{
     constructor(data){
         super();
-        this.crc = CRC.default('CRC16_X_25');
-        this.text = '';
-        this.parsedText = null;
-        this.parsedObj = {
-            msgHeaders:{},
-            payload: null
-        },
-        this.was_successfull = false;
+
+        this.init();
 
         return this;
     }
@@ -56,6 +50,21 @@ export class HciMessageParser extends BaseParser{
 
     }
 
+    init(){
+        this.crc = CRC.default('CRC16_X_25');
+        this.text = '';
+        this.parsedText = null;
+        this.parsedObj = {
+            msgHeaders:{},
+            payload: null,
+            crc16: null,
+            rssi: null,
+            timestamp: null
+        },
+        this.was_successfull = false;
+
+    }
+
     flush(){
         console.log('flushed');
 
@@ -63,7 +72,10 @@ export class HciMessageParser extends BaseParser{
         this.parsedText = null;
         this.parsedObj = {
             msgHeaders:{},
-            payload: null
+            payload: null,
+            rssi : null,
+            crc16: null,
+            timestamp: null
         },
         this.was_successfull = false;
     }
@@ -106,6 +118,8 @@ export class HciMessageParser extends BaseParser{
     }
 
     has_SOF(){
+        if( this.text === '' ) return false;
+        
         let indexOf = this.text.toLowerCase().indexOf( this.SOFTerm() );
 
         return indexOf !== -1;
@@ -264,9 +278,6 @@ export class HciMessageParser extends BaseParser{
         if( this.getControlField('timestamp')) crc16IndexPadding+=8;
         if( this.getControlField('rssi_field')) crc16IndexPadding+=2;
 
-        console.log('CRC 16 Starting Padding: ', crc16IndexPadding);
-        console.log('CRC 16 Starting Index: ', (this.payloadEndIndex() + crc16IndexPadding) );
-
         return this.payloadEndIndex() + crc16IndexPadding ;
     }
 
@@ -275,8 +286,6 @@ export class HciMessageParser extends BaseParser{
 
         if( this.getControlField('timestamp')) rssiIndexPadding  +=8;
 
-        console.log('RSSI Starting Padding: ', rssiIndexPadding );
-        console.log('RSSI Starting Index: ', (this.payloadEndIndex() + rssiIndexPadding ) );
         return this.payloadEndIndex() + rssiIndexPadding  ;
     }
 
@@ -291,14 +300,14 @@ export class HciMessageParser extends BaseParser{
     checkCRC16(){
         if( this.crc16IsEnabled() ){
             const crc16_start_index = this.calcCRC16StartingIndex();
-            const crc16 = this.text.slice(crc16_start_index);
+            const crc16 = this.text.substr(crc16_start_index, 4);
             this.parsedObj['crc16'] = crc16;
             const crc16_string_uint8 = utils.HexStringToUint8(this.crc16_string());
 
             const calced_crc16 = this.crc.compute(crc16_string_uint8)
                                             .toString(16)
                                             .toUpperCase();
-                                            
+
             if( crc16 !== this.reverseCRC( calced_crc16 ) ){
                 return throw new Error('CRC NOT MATCHED');
             }
