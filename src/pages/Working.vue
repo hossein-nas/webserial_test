@@ -27,7 +27,7 @@
                     <p class="text-body text-bold text-grey-6 q-pa-none q-ma-none q-mb-sm">Logs</p>
                     <div id="logs-area" :class="{ 'no-data' : !messagesCount }">
                         <template inline v-for="(item, ind) in messages" >
-                            <LogMessage :value="item" :key="item.parsed" :index="ind+1"></LogMessage>
+                            <LogMessage :value="item" :key="item.parsed" :index="messages.length - ind"></LogMessage>
                         </template>
                        
                        <p v-if="!messagesCount" class="text-body text-grey-8 ">No data has been received yet.</p> 
@@ -59,6 +59,7 @@
             return {
                 device : null,
                 command: '',
+                reader : null,
                 initialized : false,
                 receivedMessages: [],
             }
@@ -179,6 +180,10 @@
                     console.log(e);
                 }
             },
+        },
+
+        async beforeRouteLeave(to, from, next){
+            return next();
         },
 
         computed:{
