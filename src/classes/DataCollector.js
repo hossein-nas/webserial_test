@@ -1,7 +1,7 @@
 import DataParser  from './parser';
 export default class DataCollector{
 
-    constructor( callback = null){
+    constructor( callback = null ){
         this.data = "";
         this.dataCount = 0;
         this.parser = new DataParser();

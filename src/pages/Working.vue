@@ -5,11 +5,11 @@
                 <div v-show="!!device">
                     <p class="text-h6 q-mb-sm text-bold">Device Info :</p>
                     <div class="flex q-pl-md">
-                        <div class="col text-body2">Product Id</div>
+                        <div class="col text-body2">Product ID :</div>
                         <div class="col text-bold text-body">{{ deviceInfo.productId }} </div>
                     </div>
                     <div class="flex q-pl-md">
-                        <div class="col text-body2">Vendor Id</div>
+                        <div class="col text-body2">Vendor ID :</div>
                         <div class="col text-bold text-body">{{ deviceInfo.vendorId}} </div>
                     </div>
                     
@@ -27,7 +27,7 @@
                     <p class="text-body text-bold text-grey-6 q-pa-none q-ma-none q-mb-sm">Logs</p>
                     <div id="logs-area" :class="{ 'no-data' : !messagesCount }">
                         <template inline v-for="(item, ind) in messages" >
-                            <LogMessage :value="item" :key="item.parsed" :index="messages.length - ind"></LogMessage>
+                            <LogMessage :value="item" :key="`${ind}.${item.parsed}`" :index="messages.length - ind"></LogMessage>
                         </template>
                        
                        <p v-if="!messagesCount" class="text-body text-grey-8 ">No data has been received yet.</p> 

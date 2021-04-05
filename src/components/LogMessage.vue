@@ -25,7 +25,7 @@
                         <q-item-label caption> {{ data.type | titleCase }}</q-item-label>
                     </q-item-section>
                 </q-item>
-                <q-item>
+                <q-item v-if="data.data.payload">
                     <q-item-section>
                         <q-item-label>Payload</q-item-label>
                         <q-item-label caption>{{data.data.payload}}</q-item-label>
