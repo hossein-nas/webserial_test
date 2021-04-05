@@ -3,10 +3,11 @@
         <div class="main-area flex">
             <div class="index text-body2 text-bold text-grey-8 q-pa-sm rounded-borders" v-text="index"></div>
             <div class="message text-body text-grey-7 q-ml-md text-bold" @click="toggleStats" v-text="data.parsed"></div>
-            <div class="hci_message text-body2 text-red-4 q-pa-sm rounded-borders bg-red-1" >{{ data.type | titleCase }}</div>
+            <div class="hci_message text-body2 text-red-4 q-pa-sm rounded-borders bg-red-1">{{ data.type | titleCase }}</div>
         </div>
         <div class="stats flex q-mt-md" v-show="stats">
-            <q-list dense>
+            <q-list dense style="min-width: 50%">
+                <q-item-label header>Message Details </q-item-label>
                 <q-item>
                     <q-item-section>
                         <q-item-label>Parsed String</q-item-label>
@@ -62,7 +63,53 @@
                     </q-item-section>
                 </q-item>
             </q-list>
-            <q-list></q-list>
+            <q-list dense v-if="data.data.parsedPayload">
+                <q-item-label header>Payload Data</q-item-label>
+
+                <q-item>
+                    <q-item-section>
+                        <q-item-label>C Field</q-item-label>
+                        <q-item-label caption>{{data.data.parsedPayload.c_field}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item>
+                    <q-item-section>
+                        <q-item-label>Decrypted Payload</q-item-label>
+                        <q-item-label caption>{{data.data.parsedPayload.decryptedPayload}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item>
+                    <q-item-section>
+                        <q-item-label>Device Type</q-item-label>
+                        <q-item-label caption>{{data.data.parsedPayload.device_type}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item>
+                    <q-item-section>
+                        <q-item-label>Identification</q-item-label>
+                        <q-item-label caption>0x{{data.data.parsedPayload.identification}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item>
+                    <q-item-section>
+                        <q-item-label>Manufacturer Code</q-item-label>
+                        <q-item-label caption>0x{{data.data.parsedPayload.manufacturer_code}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item>
+                    <q-item-section>
+                        <q-item-label>Version</q-item-label>
+                        <q-item-label caption>{{data.data.parsedPayload.version}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+
+            <q-list dense v-else="data.data.parsedPayload">
+                <q-item-label header>Payload Data</q-item-label>
+                <q-item>
+                    <q-item-label>No Data</q-item-label>
+                </q-item>
+            </q-list>
         </div>
     </div>
 </template>
@@ -129,7 +176,12 @@
             background-color: $grey-4;
         }
         .message{
-            flex-grow: 1;
+            // flex-grow: 1;
+            max-width: 70%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
             &:hover{
                 cursor:pointer;
                 color: $blue-8 !important;
@@ -137,7 +189,7 @@
         }
 
         .hci_message{
-            margin-left: 1rem;
+            margin-left: auto;
             font-weight: bold;
 
         }

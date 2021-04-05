@@ -151,9 +151,23 @@
                 })
             },
 
-            Logger(data, count){
-                this.receivedMessages.push(data);
+            async Logger(data, count){
+                if( data.data.payload ){
+                    const {data: parsedPayload }= await this.decryptPayloadData(data.data.payload);
+
+                    data.data.parsedPayload = parsedPayload;
+                }
+
+                await this.receivedMessages.push(data);
                 console.log(data, count);
+            },
+
+            decryptPayloadData(payload){
+                const data = {
+                    'rawPayload': payload,
+                }
+
+                return this.$api.post('', data)
             },
 
             async startReading() {
