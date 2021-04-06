@@ -7,7 +7,7 @@
 ## Access API
 
 ### GET test
-* GET request on localhost:8081/api/v1/test
+* GET request on https://localhost:443/api/v1/test
 * Response in JSON:
 ````JSON
 {
@@ -16,7 +16,7 @@
 }
 ````
 ### POST payloads
-* POST request on localhost:8081/api/v1/payloads
+* POST request on https://localhost:443081/api/v1/payloads
 * Content-Type: application/json
 * Body:
 ````JSON
@@ -37,7 +37,7 @@
 }
 ````
 ### GET payloads
-* GET request on localhost:8081/api/v1/payloads
+* GET request on https://localhost:44381/api/v1/payloads
 * Response in JSON, only counter value on **decryptedPayload**:
 ````JSON
 [
