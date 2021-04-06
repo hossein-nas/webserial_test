@@ -1,0 +1,21 @@
+version : "3.0"
+
+services :
+        quasar :
+                depends_on:
+                        - bisar
+                build: ./quasar/
+                restart: always
+                ports: 
+                        - "8000:8000"
+                volumes: 
+                        - ./src:/usr/share/nginx/html/
+                networks:
+                        - my-network
+        bisar:
+                build: ./bisar_core/
+                networks:
+                        - my-network
+
+networks:
+        my-network: {}
