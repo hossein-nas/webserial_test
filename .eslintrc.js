@@ -11,7 +11,6 @@ module.exports = {
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "parser": "babel-eslint",
   "plugins": [
     "vue"
   ],
@@ -20,6 +19,7 @@ module.exports = {
     "no-empty" : "off",
     "no-prototype-builtins" : "off",
     "no-unused-vars" : "off",
+    "vue/html-indent": "error",
     "indent": [
       "error",
       2

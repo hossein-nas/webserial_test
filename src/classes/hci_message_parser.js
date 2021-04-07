@@ -186,7 +186,7 @@ export class HciMessageParser extends BaseParser{
     console.log("Text : ", this.text.length);
 
     if( total > this.text.length ){
-      return throw new Error("Data Corruption!");
+      throw new Error("Data Corruption!");
     }
 
     return true;
@@ -308,7 +308,7 @@ export class HciMessageParser extends BaseParser{
         .toUpperCase();
 
       if( crc16 !== this.reverseCRC( calced_crc16 ) ){
-        return throw new Error("CRC NOT MATCHED");
+        throw new Error("CRC NOT MATCHED");
       }
     }
   }

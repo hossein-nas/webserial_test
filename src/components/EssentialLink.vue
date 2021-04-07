@@ -23,7 +23,7 @@
 
 <script>
 export default {
-  name: 'EssentialLink',
+  name: "EssentialLink",
   props: {
     title: {
       type: String,
@@ -32,18 +32,18 @@ export default {
 
     caption: {
       type: String,
-      default: ''
+      default: ""
     },
 
     link: {
       type: String,
-      default: '#'
+      default: "#"
     },
 
     icon: {
       type: String,
-      default: ''
+      default: ""
     }
   }
-}
+};
 </script>
