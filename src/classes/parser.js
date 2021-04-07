@@ -1,25 +1,25 @@
-import {HciMessageParser} from './hci_message_parser';
+import {HciMessageParser} from "./hci_message_parser";
 
 class DataParser {
-    constructor(parser = null){
-        if( parser ){
-            this.parser = parser;
-            return;
-        }
-        this.parser = new HciMessageParser()
+  constructor(parser = null){
+    if( parser ){
+      this.parser = parser;
+      return;
     }
+    this.parser = new HciMessageParser();
+  }
 
-    parse(data){
-        this.flush();
+  parse(data){
+    this.flush();
 
-        this.parser.addData(data).parse();
+    this.parser.addData(data).parse();
 
-        return this.parser.getParsedData();
-    }
+    return this.parser.getParsedData();
+  }
 
-    flush(){
-        this.parser.flush();
-    }
+  flush(){
+    this.parser.flush();
+  }
 }
 
 
