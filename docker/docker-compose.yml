@@ -14,6 +14,8 @@ services :
                     - api.bisar.local
     bisar:
         build: ./bisar_core/
+        ports:
+            - "8081:8081"
         networks:
             - my-network
 

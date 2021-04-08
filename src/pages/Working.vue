@@ -164,7 +164,7 @@
 
             decryptPayloadData(payload){
                 let data = JSON.stringify({'rawPayload': payload});
-                console.log('stryingified');
+                console.log('stryingified 2');
 
                 return this.$api.post('', data)
             },

@@ -5,6 +5,7 @@ RUN apt-get install -y nodejs
 RUN apt-get install -y git
 RUN npm install -g npm@latest
 
+ADD https://api.github.com/repos/hossein-nas/webserial_test/commits /dev/null
 RUN git clone https://github.com/hossein-nas/webserial_test.git
 WORKDIR /webserial_test
 RUN git checkout change-ui

@@ -44,7 +44,7 @@ module.exports = function ( ctx ) {
     build: {
       vueRouterMode: 'history', // available values: 'hash', 'history'
       env : {
-        API : ctx.dev ? 'http://localhost:8081' : 'https://localhost:4043',
+        API : ctx.dev ? 'http://localhost:8081' : 'https://bisar.rp-kazhal.ir',
       },
 
       // transpile: false,
