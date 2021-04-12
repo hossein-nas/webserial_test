@@ -9,13 +9,11 @@ services :
         ports: 
             - "8000:8000"
         networks:
-            my-network:
-                aliases:
-                    - api.bisar.local
+            - my-network
     bisar:
         build: ./bisar_core/
         ports:
-            - "8081:8081"
+            - "4043:443"
         networks:
             - my-network
 

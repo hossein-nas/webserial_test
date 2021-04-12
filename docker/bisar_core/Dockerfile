@@ -5,6 +5,7 @@ FROM adoptopenjdk/openjdk11
 COPY bisarcore-0.0.1-SNAPSHOT.jar /bisar.jar
 
 EXPOSE 8081
+EXPOSE 443
 
 # set the startup command to execute the jar
 CMD ["java", "-jar", "/bisar.jar"]
