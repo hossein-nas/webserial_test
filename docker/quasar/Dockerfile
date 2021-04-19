@@ -16,8 +16,9 @@ EXPOSE 8001
 RUN apt-get install -y nginx
 RUN cd /etc/nginx
 ADD default.conf /etc/nginx/conf.d/
+RUN rm -rf /usr/share/nginx/html/*
 RUN mkdir /usr/share/nginx/html/spa -p 
 RUN mkdir /usr/share/nginx/html/pwa -p 
-RUN rm -rf /usr/share/nginx/html/* && cp -r /webserial_test/dist/spa/* /usr/share/nginx/html/spa/ && cp -r /webserial_test/dist/pwa/* /usr/share/nginx/html/pwa/
+RUN cp -r /webserial_test/dist/spa/* /usr/share/nginx/html/spa/ && cp -r /webserial_test/dist/pwa/* /usr/share/nginx/html/pwa/
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 CMD service nginx start 
